@@ -1,0 +1,40 @@
+---
+- name: install mariadb and def packages
+  yum: 
+    name: "{{ item }}"
+    state: installed
+  with_items:
+   - mariadb-server
+   - MySQL-python
+   - libselinux-python
+
+- name: create mariadb log
+  file:
+    path: /var/log/mysqld.log
+    state: touch
+    owner: mysql
+    group: mysql
+    mode: 0775
+
+- name: copy mysql config
+  template: 
+    src: my.cnf
+    dest: /etc/my.cnf
+
+- selinux:
+    conf: /etc/sysconfig/selinux
+    state: disabled
+
+- name: add firewalld rule
+  firewalld:
+    port: "{{ mysql_port }}/tcp"
+#    permanent: true
+    state: enabled
+    immediate: yes
+  ignore_errors: yes
+
+- name: start mariadb
+  service:
+    name: mariadb
+    state: started
+    enabled: yes

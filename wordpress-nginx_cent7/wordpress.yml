@@ -1,0 +1,13 @@
+---
+- name: install wordpress with nginx, php-fpm and mariadb
+  hosts: wordpress
+  remote_user: root
+  # sudo: yes
+
+  roles:
+    - common
+    - mariadb
+    - nginx
+    - php-fpm
+    - wordpress
+#    - letsencrypt

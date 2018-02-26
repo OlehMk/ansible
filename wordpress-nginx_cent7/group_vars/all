@@ -1,0 +1,15 @@
+---
+# mysql settings
+mysqlservice: mysqld
+mysql_port: 3306
+
+# domain settings
+domain_name: wordpress.example.com
+domain_dir: "example.com/wordpress"
+
+# wordpress settings
+download_url: "https://wordpress.org/latest.tar.gz"
+db_name: wordpress
+db_user: wordpress
+db_password: Password
+install_dir: "/var/www/html/{{ domain_dir }}"

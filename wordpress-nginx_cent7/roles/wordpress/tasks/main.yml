@@ -1,0 +1,73 @@
+---
+- name: download latest version of wordpress
+  get_url:
+    url: "{{ download_url }}"
+    dest: /tmp/latest.tar.gz
+
+- name: extract archive into /tmp directory
+  unarchive:
+    src: /tmp/latest.tar.gz
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: move files to {{ install_dir }} directory
+  shell: mv -T /tmp/wordpress {{ install_dir }}
+
+- name: remove downloaded archive from /tmp directory
+  file: 
+    path: /tmp/latest.tar.gz
+    state: absent
+
+- name: create {{ install_dir }}/tmp directory for open_basedir
+  file: 
+    path: "{{ install_dir }}/tmp"
+    state: directory
+
+- name: add group "wordpress" for run cms
+  group:
+    name: wordpress
+    state: present
+
+- name: add user "wordpress" for run cms
+  user:
+    name: wordpress
+    group: wordpress
+    home: "{{ install_dir }}"
+    state: present
+
+- name: create salts for wordpress config
+  local_action: command curl https://api.wordpress.org/secret-key/1.1/salt/
+  register: "wp_salt"
+  become: no
+
+- name: create wordpress db
+  mysql_db:
+    name: "{{ db_name }}"
+    state: present
+
+- name: create wordpress db user
+  mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    host: localhost
+    state: present
+
+- name: copy wordpress config
+  template:
+    src: wp-config.php
+    dest: "{{ install_dir }}/"
+
+- name: change ownership of wordpress files and folders
+  file: 
+    path: "{{ install_dir }}"
+    owner: wordpress
+    group: wordpress
+    state: directory
+    recurse: yes
+
+- name: restart php-fpm
+  service: 
+    name: php-fpm
+    state: restarted
+    enabled: yes

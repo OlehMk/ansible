@@ -1,0 +1,11 @@
+---
+- name: stop and disable nginx
+  service: 
+    name: nginx
+    state: stopped
+    enabled: no
+
+- name: uninstall nginx package
+  yum:
+    name: nginx*
+    state: absent

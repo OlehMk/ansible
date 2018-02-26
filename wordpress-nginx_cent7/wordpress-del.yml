@@ -1,0 +1,12 @@
+---
+- name: uninstall wordpress with nginx, php-fpm and mariadb
+  hosts: wordpress
+  remote_user: root
+  # sudo: yes
+
+  roles:
+    - wordpress-del
+    - php-fpm-del
+    - nginx-del
+    - mariadb-del
+    - common-del

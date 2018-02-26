@@ -1,0 +1,35 @@
+---
+- name: stop nginx and php-fpm
+  service: 
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - nginx
+    - php-fpm
+
+- name: delete user "wordpress"
+  user:
+    name: wordpress
+    state: absent
+    remove: yes
+
+- name: delete group "wordpress"
+  group:
+    name: wordpress
+    state: absent
+
+- name: delete wordpress db user
+  mysql_user:
+    name: "{{ db_user }}"
+    host: localhost
+    state: absent
+
+- name: delete wordpress db
+  mysql_db:
+    name: "{{ db_name }}"
+    state: absent
+
+- name: delete {{ install_dir }} directory
+  file: 
+    path: "{{ install_dir }}"
+    state: absent

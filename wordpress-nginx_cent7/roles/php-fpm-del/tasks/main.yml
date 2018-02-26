@@ -1,0 +1,11 @@
+---
+- name: stop and disable php-fpm
+  service: 
+    name: php-fpm
+    state: stopped
+    enabled: no
+
+- name: uninstall php-fpm and def packages
+  yum:
+    name: php*
+    state: absent

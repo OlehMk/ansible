@@ -1,0 +1,57 @@
+---
+- name: Install letsencrypt
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - letsencrypt
+
+- name: create letsencrypt directory
+  file: 
+    path: "{{ install_dir }}/letsencrypt"
+    state: directory
+
+- lineinfile:
+    path: /etc/nginx/conf.d/default.conf
+    regexp: '#return 301 https'
+    line: 'return 301 https://{{ domain_name }}$request_uri;'
+
+- name: add firewalld rule
+  firewalld:
+    port: 443/tcp
+#    permanent: true
+    state: enabled
+    immediate: yes
+  ignore_errors: yes
+
+- name: reload nginx for letsencrypt requests
+  service: 
+    name: nginx
+    state: restarted
+
+- name: create letsencrypt certificate
+  shell: letsencrypt certonly -n webroot -w {{ install_dir }}/letsencrypt --register-unsafely-without-emai --agree-tos -d {{ domain_name }} -d www.{{ domain_name }}
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name }}
+
+- name: Generate dhparams
+  shell: openssl dhparam -out /etc/nginx/dhparams.pem 2048
+  args:
+    creates: /etc/nginx/dhparams.pem
+
+- name: Copy nginx config
+  template:
+    src: nginx_ssl.conf
+    dest: /etc/nginx/conf.d/nginx_ssl.conf
+  notify: restart nginx
+
+- name: Add letsencrypt cronjob for cert renewal
+  cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly -n webroot -w {{ install_dir }}/letsencrypt --register-unsafely-without-emai --agree-tos -d {{ domain_name }} -d www.{{ domain_name }} --post-hook "systemctl reload nginx"
+
+- name: reload nginx to activate letsencrypt site
+  service: 
+    name: nginx
+    state: restarted

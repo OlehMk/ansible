@@ -1,0 +1,30 @@
+---
+- name: delete nginx repo
+  file:
+    path: /etc/yum.repos.d/nginx.repo
+    state: absent
+
+- name: delete epel repo
+  file:
+    path: /etc/yum.repos.d/epel.repo
+    state: absent
+
+- name: delete remi repo
+  file:
+    path: /etc/yum.repos.d/remi.repo
+    state: absent
+
+- name: delete gpg key for nginx repo
+  file:
+    path: /etc/pki/rpm-gpg/RPM-GPG-KEY-NGINX
+    state: absent
+
+- name: delete gpg key for epel repo
+  file:
+    path: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    state: absent
+
+- name: delete gpg key for remi repo
+  file:
+    path: /etc/pki/rpm-gpg/RPM-GPG-KEY-remi
+    state: absent
